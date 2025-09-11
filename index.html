@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Beyond the Rank: Your Secret Weapon for JEE & NEET</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-brd: rgba(255, 255, 255, 0.18);
+    }
+    html, body {
+      height: 100%;
+      background: #0b1220;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      /* Use dynamic viewport height so mobile browser bars don't crop slides */
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    /* Slides */
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .45s ease;
+      padding: 2rem;
+    }
+    .slide[aria-hidden="false"] {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Glass */
+    .glass-bg {
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-brd);
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .slide { transition: none !important; }
+    }
+
+    /* Print / PDF export */
+    @media print {
+      body { overflow: visible; }
+      .chrome, .nav-btn, #progress, #timer, #help { display: none !important; }
+      .slide {
+        position: static !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        page-break-after: always;
+        height: auto;
+        min-height: 90vh;
+      }
+    }
+  </style>
+</head>
+
+<body class="relative">
+  <!-- Top Chrome: title + timer + controls -->
+  <header
+    class="chrome fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-2 bg-black/20 backdrop-blur"
+    role="presentation"
+  >
+    <div class="flex items-center gap-3">
+      <button
+        id="helpToggle"
+        class="nav-btn px-3 py-1.5 rounded-lg glass-bg text-sm hover:bg-white/10"
+        title="Help (H)"
+      >Help</button>
+      <button
+        id="fsToggle"
+        class="nav-btn px-3 py-1.5 rounded-lg glass-bg text-sm hover:bg-white/10"
+        title="Fullscreen (F)"
+      >Fullscreen</button>
+      <button
+        id="printBtn"
+        class="nav-btn px-3 py-1.5 rounded-lg glass-bg text-sm hover:bg-white/10"
+        title="Print / Save as PDF (Ctrl/Cmd+P)"
+      >Export PDF</button>
+    </div>
+    <div id="titleBar" class="text-sm md:text-base opacity-90 truncate max-w-[55vw]">
+      Beyond the Rank — Your Secret Weapon for JEE &amp; NEET
+    </div>
+    <div id="timer" class="text-sm md:text-base px-3 py-1.5 rounded-lg glass-bg select-none">
+      40:00
+    </div>
+  </header>
+
+  <!-- Progress bar (clickable) -->
+  <nav
+    id="progress"
+    class="fixed bottom-0 left-0 right-0 z-40 px-4 py-2 flex items-center gap-2"
+    aria-label="Slide progress"
+  >
+    <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+      <div id="progressFill" class="h-full bg-blue-400 w-0"></div>
+    </div>
+    <div id="counter" class="text-sm tabular-nums w-20 text-right">1 / 14</div>
+  </nav>
+
+  <!-- Prev / Next buttons -->
+  <button
+    id="prevBtn"
+    class="nav-btn fixed left-3 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full glass-bg hover:bg-white/10"
+    title="Previous (← / PgUp)"
+    aria-label="Previous slide"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+      fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M15 19l-7-7 7-7"/>
+    </svg>
+  </button>
+
+  <button
+    id="nextBtn"
+    class="nav-btn fixed right-3 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full glass-bg hover:bg-white/10"
+    title="Next (→ / PgDn / Space)"
+    aria-label="Next slide"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+      fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M9 5l7 7-7 7"/>
+    </svg>
+  </button>
+
+  <!-- Help overlay -->
+  <aside
+    id="help"
+    class="hidden fixed inset-0 z-50 bg-black/70 p-6 overflow-y-auto"
+    aria-modal="true" role="dialog" aria-label="Keyboard shortcuts"
+  >
+    <div class="max-w-3xl mx-auto bg-gray-900 rounded-2xl p-6 border border-white/10">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold">Shortcuts</h2>
+        <button class="px-3 py-1 rounded-lg glass-bg hover:bg-white/10" id="helpClose">Close</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-sm">
+        <div class="glass-bg rounded-lg p-4">
+          <p><strong>Next:</strong> →, PageDown, Space</p>
+          <p><strong>Previous:</strong> ←, PageUp</p>
+          <p><strong>First / Last:</strong> Home / End</p>
+        </div>
+        <div class="glass-bg rounded-lg p-4">
+          <p><strong>Fullscreen:</strong> F</p>
+          <p><strong>Help:</strong> H</p>
+          <p><strong>Print/PDF:</strong> Ctrl/Cmd + P</p>
+        </div>
+      </div>
+      <p class="mt-4 opacity-80">Tip: Each slide is deep-linkable (URL hash). Share <code>#s7</code> to open slide 7 directly.</p>
+    </div>
+  </aside>
+
+  <!-- Slide container -->
+  <main id="deck" class="w-full h-full relative">
+    <!-- Slide 1 -->
+    <section
+      class="slide bg-gradient-to-br from-indigo-900 via-gray-900 to-blue-900 text-center"
+      data-title="Beyond the Rank" id="s1" aria-hidden="false"
+    >
+      <div class="px-6 max-w-5xl mx-auto">
+        <img src="Logo.png" alt="Brand Logo" class="h-20 mx-auto mb-8" loading="lazy" />
+        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight">Beyond the Rank</h1>
+        <p class="mt-4 text-2xl md:text-4xl font-light text-blue-300">Your Secret Weapon for JEE &amp; NEET</p>
+        <p class="mt-10 text-lg text-gray-300">How a different path can lead you to the summit.</p>
+      </div>
+    </section>
+
+    <!-- Slide 2 -->
+    <section class="slide text-center" data-title="The Two Climbers" id="s2" aria-hidden="true">
+      <div class="px-6 max-w-5xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-8">Your Goal: The Summit</h2>
+        <div class="w-full max-w-4xl mx-auto">
+          <!-- Mountain SVG -->
+          <svg viewBox="0 0 800 400" class="w-full" xmlns="http://www.w3.org/2000/svg" aria-label="Two paths up a mountain">
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(55, 65, 81);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(17, 24, 39);stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <path d="M 100 350 L 300 100 L 400 200 L 550 50 L 700 350 Z" fill="url(#grad1)" />
+            <!-- Usual Path -->
+            <path d="M120,350 C200,300 250,250 290,120" stroke="#60a5fa" stroke-width="4" fill="none" stroke-dasharray="10,5"/>
+            <text x="130" y="280" font-size="16" fill="white" transform="rotate(-30 130,280)">The Usual Path</text>
+            <!-- Explorer Trail -->
+            <path d="M680,350 C600,280 500,200 560,70" stroke="#facc15" stroke-width="4" fill="none"/>
+            <text x="620" y="250" font-size="16" fill="white" transform="rotate(35 620,250)">The Explorer's Trail (NSEs)</text>
+          </svg>
+        </div>
+        <p class="mt-4 text-xl text-gray-300">Most follow the crowded trail. The explorer builds strength on a tougher path.</p>
+      </div>
+    </section>
+
+    <!-- Slide 3 -->
+    <section class="slide text-center" data-title="Secret Weapon" id="s3" aria-hidden="true">
+      <div class="px-6 max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">What is this “Secret Weapon”?</h2>
+        <div class="flex items-center justify-center mb-6">
+          <span class="text-2xl font-semibold text-yellow-300">National Standard Examinations (NSEs)</span>
+        </div>
+        <div class="glass-bg rounded-xl p-8 text-left space-y-4">
+          <p class="text-lg flex"><span class="text-green-400 mr-3 text-2xl">✓</span>The first step to the International Science Olympiads.</p>
+          <p class="text-lg flex"><span class="text-red-400 mr-3 text-2xl">✗</span>NOT another syllabus to memorize.</p>
+          <p class="text-xl font-semibold flex"><span class="text-blue-400 mr-3 text-2xl">✓</span>A “gym” to train thinking muscles for JEE &amp; NEET.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4 -->
+    <section class="slide" data-title="Mythbusting" id="s4" aria-hidden="true">
+      <div class="px-6 max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">Let's Bust Some Myths</h2>
+        <div class="space-y-6">
+          <div class="glass-bg rounded-lg p-6">
+            <p class="text-lg font-semibold text-red-400">Myth #1: “It’s a distraction from my real prep.”</p>
+            <p class="text-lg mt-2 text-green-300">Reality: It’s the most focused practice you can do.</p>
+          </div>
+          <div class="glass-bg rounded-lg p-6">
+            <p class="text-lg font-semibold text-red-400">Myth #2: “Different syllabus = wasted time.”</p>
+            <p class="text-lg mt-2 text-green-300">Reality: Same core concepts; questions probe “why/how.”</p>
+          </div>
+          <div class="glass-bg rounded-lg p-6">
+            <p class="text-lg font-semibold text-red-400">Myth #3: “Only for born geniuses.”</p>
+            <p class="text-lg mt-2 text-green-300">Reality: It rewards curiosity and persistence; it builds brilliance.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5 (Dates) -->
+    <section class="slide text-center" data-title="Key Dates" id="s5" aria-hidden="true">
+      <div class="px-6 max-w-5xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-8">Mark Your Calendars: 2025 Exam Dates</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="glass-bg rounded-xl p-8">
+            <p class="text-xl font-semibold text-yellow-300">NSEA (Astronomy)</p>
+            <p class="text-4xl font-bold mt-4">Saturday</p>
+            <p class="text-2xl text-gray-300">November 22, 2025</p>
+          </div>
+          <div class="glass-bg rounded-xl p-8">
+            <p class="text-xl font-semibold text-blue-300">NSEP, NSEC, NSEB &amp; NSEJS</p>
+            <p class="text-4xl font-bold mt-4">Sunday</p>
+            <p class="text-2xl text-gray-300">November 23, 2025</p>
+          </div>
+        </div>
+        <p class="mt-8 text-gray-400">Enrollment ends on <span class="text-green-400 font-bold">14 Sep 2025</span>. Check IAPT.</p>
+      </div>
+    </section>
+
+    <!-- Slide 6 (Pattern) -->
+    <section class="slide" data-title="Paper Pattern" id="s6" aria-hidden="true">
+      <div class="px-6 max-w-5xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-8">The Workout Plan: Paper Pattern</h2>
+        <p class="text-xl mb-6">Total Marks: 216</p>
+        <div class="flex flex-col md:flex-row gap-8">
+          <div class="flex-1 glass-bg rounded-xl p-8">
+            <h3 class="text-2xl font-bold text-blue-300">Part A: The Sprint</h3>
+            <ul class="mt-4 space-y-3 text-lg text-left">
+              <li><span class="font-semibold">48</span> single-correct MCQs</li>
+              <li><span class="text-green-400 font-bold">+3</span> correct</li>
+              <li><span class="text-red-400 font-bold">−1</span> incorrect</li>
+              <li class="pt-4 font-semibold text-yellow-300">Trains speed &amp; accuracy (JEE Main / NEET)</li>
+            </ul>
+          </div>
+          <div class="flex-1 glass-bg rounded-xl p-8">
+            <h3 class="text-2xl font-bold text-yellow-300">Part B: The Deep Dive</h3>
+            <ul class="mt-4 space-y-3 text-lg text-left">
+              <li><span class="font-semibold">12</span> multi-correct MCQs (all-or-nothing)</li>
+              <li><span class="text-green-400 font-bold">+6</span> for fully correct set of options</li>
+              <li class="pt-4 font-semibold text-blue-300">Trains conceptual precision (JEE Advanced arena)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7 -->
+    <section class="slide text-center" data-title="The Goal" id="s7" aria-hidden="true">
+      <div class="px-6 max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-8">From “Student” to “Problem-Solver”</h2>
+        <div class="flex items-center justify-center gap-8 text-xl">
+          <div><p class="text-red-400 mb-2">Student</p><p>Memorizes formulas</p></div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+          <div><p class="text-green-400 mb-2">Problem-Solver</p><p>Applies concepts</p></div>
+        </div>
+        <p class="mt-10 text-2xl text-gray-300">JEE &amp; NEET test <span class="font-bold text-yellow-300">how you think</span>, not just what you know.</p>
+      </div>
+    </section>
+
+    <!-- Slide 8 -->
+    <section class="slide text-center" data-title="Superpower 1" id="s8" aria-hidden="true">
+      <div class="px-6 max-w-3xl mx-auto">
+        <h3 class="text-2xl font-semibold text-blue-300 mb-2">Superpower #1</h3>
+        <h2 class="text-4xl md:text-5xl font-bold mb-6">X-Ray Vision for Concepts</h2>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto mb-6 text-blue-400"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        <p class="text-xl leading-relaxed opacity-95">
+          You stop memorizing formulas and start deriving them from first principles.
+          Multi-concept problems become approachable.
+        </p>
+      </div>
+    </section>
+
+    <!-- Slide 9 -->
+    <section class="slide text-center" data-title="Superpower 2" id="s9" aria-hidden="true">
+      <div class="px-6 max-w-3xl mx-auto">
+        <h3 class="text-2xl font-semibold text-yellow-300 mb-2">Superpower #2</h3>
+        <h2 class="text-4xl md:text-5xl font-bold mb-6">The Armor of Confidence</h2>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto mb-6 text-yellow-400"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <p class="text-xl leading-relaxed opacity-95">
+          After training on tricky NSE problems, JEE/NEET questions feel manageable.
+        </p>
+      </div>
+    </section>
+
+    <!-- Slide 10 -->
+    <section class="slide" data-title="Rules (Physics)" id="s10" aria-hidden="true">
+      <div class="px-6 max-w-5xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">What Does It Take to Qualify?</h2>
+        <p class="text-lg text-gray-300 mb-6">Illustration with NSEP (Physics) cutoffs (out of 216).</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="glass-bg rounded-xl p-8">
+            <h3 class="text-2xl font-bold text-green-300">Group B (Class XI &amp; below)</h3>
+            <div class="mt-6">
+              <p class="text-lg text-yellow-300">Merit Index (MI) — Direct Entry</p>
+              <p class="text-5xl font-extrabold my-2">116</p>
+              <p class="text-xl font-semibold">(≈53.7%)</p>
+            </div>
+            <div class="mt-6">
+              <p class="text-lg text-blue-300">Min. Admissible Score (MAS)</p>
+              <p class="text-5xl font-extrabold my-2">73</p>
+              <p class="text-xl font-semibold">(≈33.8%)</p>
+            </div>
+          </div>
+          <div class="glass-bg rounded-xl p-8">
+            <h3 class="text-2xl font-bold text-green-300">Group A (Class XII)</h3>
+            <div class="mt-6">
+              <p class="text-lg text-yellow-300">Merit Index (MI) — Direct Entry</p>
+              <p class="text-5xl font-extrabold my-2">133</p>
+              <p class="text-xl font-semibold">(≈61.6%)</p>
+            </div>
+            <div class="mt-6">
+              <p class="text-lg text-blue-300">Min. Admissible Score (MAS)</p>
+              <p class="text-5xl font-extrabold my-2">83</p>
+              <p class="text-xl font-semibold">(≈38.4%)</p>
+            </div>
+          </div>
+        </div>
+        <p class="mt-6 text-xl font-semibold text-gray-200">Takeaway: ~55–65% puts you in strong contention.</p>
+      </div>
+    </section>
+
+    <!-- Slide 11 -->
+    <section class="slide" data-title="Rules (Biology)" id="s11" aria-hidden="true">
+      <div class="px-6 max-w-5xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">What Does It Take to Qualify?</h2>
+        <p class="text-lg text-gray-300 mb-6">Illustration with NSEB (Biology) cutoffs (out of 216).</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="glass-bg rounded-xl p-8">
+            <h3 class="text-2xl font-bold text-green-300">Group B (Class XI &amp; below)</h3>
+            <div class="mt-6">
+              <p class="text-lg text-yellow-300">Merit Index (MI)</p>
+              <p class="text-5xl font-extrabold my-2">119</p>
+              <p class="text-xl font-semibold">(≈55.1%)</p>
+            </div>
+            <div class="mt-6">
+              <p class="text-lg text-blue-300">Min. Admissible Score (MAS)</p>
+              <p class="text-5xl font-extrabold my-2">74</p>
+              <p class="text-xl font-semibold">(≈34.3%)</p>
+            </div>
+          </div>
+          <div class="glass-bg rounded-xl p-8">
+            <h3 class="text-2xl font-bold text-green-300">Group A (Class XII)</h3>
+            <div class="mt-6">
+              <p class="text-lg text-yellow-300">Merit Index (MI)</p>
+              <p class="text-5xl font-extrabold my-2">119</p>
+              <p class="text-xl font-semibold">(≈55.1%)</p>
+            </div>
+            <div class="mt-6">
+              <p class="text-lg text-blue-300">Min. Admissible Score (MAS)</p>
+              <p class="text-5xl font-extrabold my-2">74</p>
+              <p class="text-xl font-semibold">(≈34.3%)</p>
+            </div>
+          </div>
+        </div>
+        <p class="mt-6 text-xl font-semibold text-gray-200">Takeaway: ~55–65% is a strong range here too.</p>
+      </div>
+    </section>
+
+    <!-- Slide 12 -->
+    <section class="slide text-center" data-title="First Steps" id="s12" aria-hidden="true">
+      <div class="px-6 max-w-3xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-8">Your First Step on the Explorer’s Trail</h2>
+        <div class="space-y-6 text-left">
+          <p class="text-xl glass-bg p-4 rounded-lg"><span class="font-bold text-blue-300">1. Don’t overhaul:</span> 3–4 hrs/week is enough to begin.</p>
+          <p class="text-xl glass-bg p-4 rounded-lg"><span class="font-bold text-blue-300">2. Start with past papers:</span> Pick one subject you enjoy; solve last 5 years.</p>
+          <p class="text-xl glass-bg p-4 rounded-lg"><span class="font-bold text-blue-300">3. Embrace struggle:</span> The struggle is the workout.</p>
+          <p class="text-xl glass-bg p-4 rounded-lg"><span class="font-bold text-blue-300">4. Analyze:</span> Study solutions for the <em>thinking process</em>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 13 -->
+    <section
+      class="slide bg-gradient-to-br from-indigo-900 via-gray-900 to-blue-900 text-center"
+      data-title="The Summit" id="s13" aria-hidden="true"
+    >
+      <div class="px-6 max-w-3xl mx-auto">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-yellow-300 mx-auto"
+          viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
+          <path fill-rule="evenodd"
+            d="M11.293 3.293a1 1 0 011.414 0l.001.001 2.828 2.828a1 1 0 11-1.414 1.414l-1.829-1.828-1.828 1.828a1 1 0 11-1.414-1.414l2.828-2.828zM8 9a1 1 0 011-1h.01a1 1 0 110 2H9a1 1 0 01-1-1z"
+            clip-rule="evenodd" />
+          <path d="M4 11a1 1 0 100 2h.01a1 1 0 100-2H4zM4.75 3.25a.75.75 0 01.75-.75h8.5a.75.75 0 010 1.5h-8.5a.75.75 0 01-.75-.75z" />
+        </svg>
+        <h2 class="text-4xl md:text-5xl font-extrabold mt-4">The Summit Awaits</h2>
+        <p class="mt-6 text-xl text-blue-200">NSEs aren’t a detour — they’re the best training ground for JEE &amp; NEET.</p>
+        <p class="mt-6 text-2xl font-bold text-yellow-300">Build a problem-solver’s mind, and the rank will follow.</p>
+      </div>
+    </section>
+
+    <!-- Slide 14 -->
+    <section class="slide text-center" data-title="Q&A" id="s14" aria-hidden="true">
+      <div class="px-6 max-w-3xl mx-auto">
+        <h2 class="text-5xl md:text-7xl font-extrabold">Questions?</h2>
+        <img src="Logo.png" alt="Brand Logo" class="h-20 mx-auto mt-8 mb-4" loading="lazy" />
+        <p class="mt-2 text-lg text-gray-400">Add contact info here.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --- Utilities ---
+    const $ = (q, ctx=document) => ctx.querySelector(q);
+    const $$ = (q, ctx=document) => Array.from(ctx.querySelectorAll(q));
+
+    const deck = $('#deck');
+    const slides = $$('.slide');
+    const counter = $('#counter');
+    const progressFill = $('#progressFill');
+    const titleBar = $('#titleBar');
+
+    let idx = 0;                    // current slide index
+    const N = slides.length;
+
+    // --- Accessibility attributes ---
+    function setActive(i) {
+      slides.forEach((s, k) => s.setAttribute('aria-hidden', k === i ? 'false' : 'true'));
+    }
+
+    // --- Navigation ---
+    function go(i, pushHash = true) {
+      idx = Math.max(0, Math.min(N - 1, i));
+      setActive(idx);
+
+      // Progress + counter + title
+      counter.textContent = `${idx + 1} / ${N}`;
+      progressFill.style.width = `${((idx + 1) / N) * 100}%`;
+      const t = slides[idx].dataset.title || `Slide ${idx + 1}`;
+      titleBar.textContent = `Beyond the Rank — ${t}`;
+
+      // Update hash for deep linking
+      if (pushHash) {
+        history.replaceState(null, '', `#s${idx + 1}`);
+      }
+
+      // Prev/Next visibility
+      $('#prevBtn').style.display = idx === 0 ? 'none' : 'block';
+      $('#nextBtn').style.display = idx === N - 1 ? 'none' : 'block';
+    }
+
+    // Read initial hash (#s6 -> slide 6)
+    function indexFromHash() {
+      const h = location.hash.trim();
+      const m = h.match(/^#s(\d{1,3})$/i);
+      if (m) {
+        const j = parseInt(m[1], 10) - 1;
+        if (!Number.isNaN(j) && j >= 0 && j < N) return j;
+      }
+      return 0;
+    }
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(idx + 1); }
+      if (e.key === 'ArrowLeft'  || e.key === 'PageUp')                     { e.preventDefault(); go(idx - 1); }
+      if (e.key === 'Home')                                                { e.preventDefault(); go(0); }
+      if (e.key === 'End')                                                 { e.preventDefault(); go(N - 1); }
+      if (e.key.toLowerCase() === 'f')                                     { toggleFullscreen(); }
+      if (e.key.toLowerCase() === 'h')                                     { toggleHelp(true); }
+    });
+
+    // Buttons
+    $('#nextBtn').addEventListener('click', () => go(idx + 1));
+    $('#prevBtn').addEventListener('click', () => go(idx - 1));
+    $('#printBtn').addEventListener('click', () => window.print());
+
+    // Help
+    const help = $('#help');
+    const helpToggle = $('#helpToggle');
+    const helpClose = $('#helpClose');
+    function toggleHelp(forceOpen = false) {
+      const open = forceOpen ? help.classList.contains('hidden') : help.classList.contains('hidden');
+      if (open) {
+        help.classList.remove('hidden');
+      } else {
+        help.classList.add('hidden');
+      }
+    }
+    helpToggle.addEventListener('click', () => toggleHelp(true));
+    helpClose.addEventListener('click', () => help.classList.add('hidden'));
+    help.addEventListener('click', (e) => { if (e.target === help) help.classList.add('hidden'); });
+
+    // Fullscreen
+    const fsToggle = $('#fsToggle');
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+    fsToggle.addEventListener('click', toggleFullscreen);
+
+    // Touch (swipe)
+    let touchX = null;
+    deck.addEventListener('touchstart', (e) => { touchX = e.changedTouches[0].clientX; }, {passive: true});
+    deck.addEventListener('touchend', (e) => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 40) go(idx + (dx < 0 ? 1 : -1));
+      touchX = null;
+    }, {passive: true});
+
+    // Hash navigation
+    window.addEventListener('hashchange', () => go(indexFromHash(), false));
+
+    // Timer (40:00 countdown, click to pause/resume)
+    const timerEl = $('#timer');
+    let seconds = 40 * 60;
+    let ticking = true;
+    function renderTimer() {
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      timerEl.textContent = `${m}:${s}`;
+    }
+    renderTimer();
+    setInterval(() => {
+      if (!ticking) return;
+      if (seconds > 0) { seconds--; renderTimer(); }
+    }, 1000);
+    timerEl.addEventListener('click', () => { ticking = !ticking; timerEl.classList.toggle('opacity-60'); });
+
+    // Init
+    go(indexFromHash() || 0);
+
+  </script>
+</body>
+</html>
